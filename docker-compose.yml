@@ -1,0 +1,21 @@
+services:
+
+  diskit-server:
+    image: diskit-server
+    ports: 
+      - 8080:3000
+    environment:
+      MONGO_URL: "mongodb://mdb:27017/"
+    depends_on:
+      - mongodb
+  
+  mongodb:
+    container_name: mdb
+    image: mongo:latest
+    ports:
+      - '27017:27017'
+    volumes:
+      - db-diskit:/data/db
+
+volumes:
+  db-diskit:
