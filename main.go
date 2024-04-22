@@ -67,6 +67,7 @@ func main() {
 	r := httprouter.New() // new router
 	r.Use(middleware.RecoverPanics())
 	r.Handle(http.MethodGet, "/health", healthCheck)
+	r.Handle(http.MethodGet, "/region/:region", courses.GetCoursesByRegion)
 	r.Handle(http.MethodGet, "/course/:id", courses.GetCourse)
 	r.Handle(http.MethodPost, "/courses", courses.PostCourse)
 	go log.Fatal(http.ListenAndServe(":3000", r))

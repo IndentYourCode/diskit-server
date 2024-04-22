@@ -16,11 +16,39 @@ import (
 type Course struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`
+	Region  string `json:"region"`
 }
 
 type CoursesModel struct {
 	Courses *mongo.Collection
 	Logger  *log.Logger
+}
+
+func (m *CoursesModel) GetCoursesByRegion(w http.ResponseWriter, req *http.Request) error {
+	rid := httprouter.Param(req, "region")
+
+	filter := bson.D{{"region", rid}}
+
+	cursor, err := m.Courses.Find(context.TODO(), filter)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+
+	var results []Course
+
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range results {
+		m.Logger.Printf("%+v\n", result)
+	}
+
+	resp, _ := json.Marshal(results)
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(resp)
+	return nil
 }
 
 func (m *CoursesModel) GetCourse(w http.ResponseWriter, req *http.Request) error {
