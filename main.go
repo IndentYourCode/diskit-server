@@ -15,18 +15,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Course struct {
-	name    string
-	address string
-}
-
 func healthCheck(w http.ResponseWriter, req *http.Request) error {
 	w.Write([]byte("healthy"))
-	return nil
-}
-
-func getCourses(w http.ResponseWriter, req *http.Request) error {
-	w.Write([]byte("This provides a list of all the nearby courses"))
 	return nil
 }
 

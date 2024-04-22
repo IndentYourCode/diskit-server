@@ -27,7 +27,7 @@ type CoursesModel struct {
 func (m *CoursesModel) GetCoursesByRegion(w http.ResponseWriter, req *http.Request) error {
 	rid := httprouter.Param(req, "region")
 
-	filter := bson.D{{"region", rid}}
+	filter := bson.D{{Key: "region", Value: rid}}
 
 	cursor, err := m.Courses.Find(context.TODO(), filter)
 	if err != nil {
@@ -55,7 +55,7 @@ func (m *CoursesModel) GetCourse(w http.ResponseWriter, req *http.Request) error
 	cid := httprouter.Param(req, "id")
 
 	objId, _ := primitive.ObjectIDFromHex(cid)
-	filter := bson.D{{"_id", objId}}
+	filter := bson.D{{Key: "_id", Value: objId}}
 
 	var course Course
 
