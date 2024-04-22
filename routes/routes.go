@@ -16,7 +16,9 @@ import (
 type Course struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`
-	Region  string `json:"region"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	ZipCode int    `json:"zip"`
 }
 
 type CoursesModel struct {
@@ -25,9 +27,9 @@ type CoursesModel struct {
 }
 
 func (m *CoursesModel) GetCoursesByRegion(w http.ResponseWriter, req *http.Request) error {
-	rid := httprouter.Param(req, "region")
+	rid := httprouter.Param(req, "city")
 
-	filter := bson.D{{Key: "region", Value: rid}}
+	filter := bson.D{{Key: "city", Value: rid}}
 
 	cursor, err := m.Courses.Find(context.TODO(), filter)
 	if err != nil {
