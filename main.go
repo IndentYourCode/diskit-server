@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"cs455_server/routes"
+
 	"github.com/nahojer/httprouter"
 	"github.com/nahojer/httprouter/middleware"
 	"go.mongodb.org/mongo-driver/bson"
@@ -56,17 +58,16 @@ func main() {
 	logger.Println("Connected to MongoDB!")
 
 	coll := client.Database("diskit-db").Collection("courses")
-	doc := Course{name: "Leverich Park Disc Golf", address: "4209 NE Leverich Park Way, Vancouver, WA, 98663"}
-	res, err := coll.InsertOne(context.TODO(), doc)
-	if err != nil {
-		logger.Println("Insertion failed")
-		panic(err)
+
+	courses := routes.CoursesModel{
+		Courses: coll,
+		Logger:  logger,
 	}
-	logger.Printf("Inserted Document with _id: %v\n", res)
 
 	r := httprouter.New() // new router
 	r.Use(middleware.RecoverPanics())
 	r.Handle(http.MethodGet, "/health", healthCheck)
-	r.Handle(http.MethodGet, "/courses", getCourses)
+	r.Handle(http.MethodGet, "/course/:id", courses.GetCourse)
+	r.Handle(http.MethodPost, "/courses", courses.PostCourse)
 	go log.Fatal(http.ListenAndServe(":3000", r))
 }
