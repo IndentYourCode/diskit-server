@@ -24,7 +24,7 @@ func main() {
 	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime)
 	logger.Println("This is an info message")
 	uri := os.Getenv("MONGO_URL")
-	logger.Printf("MONGODB_URL = %s", uri)
+	logger.Printf("MONGO_URL = %s", uri)
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 	opts.SetDirect(true)
@@ -49,10 +49,7 @@ func main() {
 
 	coll := client.Database("diskit-db").Collection("courses")
 
-	courses := routes.CoursesModel{
-		Courses: coll,
-		Logger:  logger,
-	}
+	courses := routes.CourseModel(coll, logger)
 
 	r := httprouter.New() // new router
 	r.Use(middleware.RecoverPanics())

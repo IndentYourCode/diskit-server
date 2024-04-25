@@ -19,7 +19,9 @@ with open('courses.csv', newline='') as csvfile:
     for course in courses:
         obj = {}
         for field in course:
-            if(isinstance(field, str)):
+            if(field.isdigit()):
+                field = int(field)
+            else:
                 field = field.upper()
             obj[fields[i]]=field
             i=i+1
