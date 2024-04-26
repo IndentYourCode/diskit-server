@@ -55,7 +55,9 @@ func main() {
 	r.Use(middleware.RecoverPanics())
 	r.Handle(http.MethodGet, "/health", healthCheck)
 	r.Handle(http.MethodGet, "/region/:city", courses.GetCoursesByRegion)
+	r.Handle(http.MethodGet, "/status/:id", courses.GetCourseStats)
 	r.Handle(http.MethodGet, "/course/:id", courses.GetCourse)
+	r.Handle(http.MethodPost, "/crowded/:id", courses.IncrementCrowd)
 	r.Handle(http.MethodPost, "/courses", courses.PostCourse)
 	go log.Fatal(http.ListenAndServe(":3000", r))
 }

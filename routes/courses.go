@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/nahojer/httprouter"
 
@@ -20,19 +21,79 @@ type Course struct {
 	City    string             `bson:"city"`
 	State   string             `bson:"state"`
 	ZipCode int                `bson:"zip"`
+	Status  map[string]int     `bson:"status"`
 }
 
 type CoursesModel struct {
 	Courses *mongo.Collection
 	Logger  *log.Logger
+	Jobs    chan string
 }
 
 func CourseModel(c *mongo.Collection, l *log.Logger) *CoursesModel {
+	model_jobs := make(chan string, 256)
 	cm := CoursesModel{
 		Courses: c,
 		Logger:  l,
+		Jobs:    model_jobs,
 	}
+	go func(jobs chan string) {
+		for val := range jobs {
+			l.Printf("Grabbed Value: %s\n", val)
+			time.Sleep(10 * time.Second)
+			key := "status." + val
+			filter := bson.D{{Key: key, Value: bson.D{{Key: "$gt", Value: 0}}}}
+			update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.crowded", Value: -1}}}}
+			resp, _ := c.UpdateMany(context.TODO(), filter, update)
+			l.Printf("Matched Count: %d\n", resp.MatchedCount)
+			if resp.ModifiedCount > 0 {
+				l.Printf("Modified Count: %d\n", resp.ModifiedCount)
+				jobs <- val
+				l.Printf("added val to jobs")
+			}
+		}
+	}(model_jobs)
+	model_jobs <- "crowded"
 	return &cm
+}
+
+func (m *CoursesModel) IncrementCrowd(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.crowded", Value: 1}}}}
+	resp, err := m.Courses.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	m.Logger.Printf("Update Crowd: %+v\n", resp)
+	m.Jobs <- "crowded"
+	return nil
+}
+
+func (m *CoursesModel) GetCourseStats(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+
+	var course Course
+
+	err := m.Courses.FindOne(context.TODO(), filter).Decode(&course)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+
+	m.Logger.Print(course.Status)
+
+	resp, _ := json.Marshal(course.Status)
+	m.Logger.Print(resp)
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(resp)
+
+	return nil
 }
 
 func (m *CoursesModel) GetCoursesByRegion(w http.ResponseWriter, req *http.Request) error {

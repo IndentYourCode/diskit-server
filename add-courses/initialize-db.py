@@ -1,5 +1,4 @@
 import csv
-import json
 from pymongo import MongoClient # type: ignore
 
 with open('courses.csv', newline='') as csvfile:
