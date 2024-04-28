@@ -54,7 +54,54 @@ func CourseModel(c *mongo.Collection, l *log.Logger) *CoursesModel {
 		}
 	}(model_jobs)
 	model_jobs <- "crowded"
+	model_jobs <- "empty"
+	model_jobs <- "wind"
+	model_jobs <- "rain"
 	return &cm
+}
+func (m *CoursesModel) IncrementRain(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.rain", Value: 1}}}}
+	resp, err := m.Courses.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	m.Logger.Printf("Update Rain: %+v\n", resp)
+	m.Jobs <- "rain"
+	return nil
+}
+
+func (m *CoursesModel) IncrementEmpty(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.empty", Value: 1}}}}
+	resp, err := m.Courses.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	m.Logger.Printf("Update Empty: %+v\n", resp)
+	m.Jobs <- "empty"
+	return nil
+}
+
+func (m *CoursesModel) IncrementWindy(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.wind", Value: 1}}}}
+	resp, err := m.Courses.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	m.Logger.Printf("Update Wind: %+v\n", resp)
+	m.Jobs <- "wind"
+	return nil
 }
 
 func (m *CoursesModel) IncrementCrowd(w http.ResponseWriter, req *http.Request) error {
