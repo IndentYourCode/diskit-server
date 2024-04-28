@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"math"
 	"net/http"
 	"time"
 
@@ -116,6 +117,39 @@ func (m *CoursesModel) IncrementCrowd(w http.ResponseWriter, req *http.Request) 
 	}
 	m.Logger.Printf("Update Crowd: %+v\n", resp)
 	m.Jobs <- "crowded"
+	return nil
+}
+
+func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) error {
+	cid := httprouter.Param(req, "id")
+
+	objId, _ := primitive.ObjectIDFromHex(cid)
+	filter := bson.D{{Key: "_id", Value: objId}}
+
+	var course Course
+
+	err := m.Courses.FindOne(context.TODO(), filter).Decode(&course)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+
+	empty := course.Status["empty"]
+	crowded := course.Status["crowded"]
+	result := int(math.Abs(float64(crowded - empty)))
+
+	prop := struct {
+		Property string
+		Value    int
+	}{
+		Property: "Population",
+		Value:    result,
+	}
+
+	resp, _ := json.Marshal(prop)
+	m.Logger.Print(resp)
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(resp)
 	return nil
 }
 
