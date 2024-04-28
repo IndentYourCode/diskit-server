@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"log"
-	"math"
 	"net/http"
 	"time"
 
@@ -136,7 +135,7 @@ func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) e
 
 	empty := course.Status["empty"]
 	crowded := course.Status["crowded"]
-	result := int(math.Abs(float64(crowded - empty)))
+	result := crowded - empty
 
 	prop := struct {
 		Property string
