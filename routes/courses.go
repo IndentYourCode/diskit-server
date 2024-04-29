@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/nahojer/httprouter"
 
@@ -21,42 +20,51 @@ type Course struct {
 	City    string             `bson:"city"`
 	State   string             `bson:"state"`
 	ZipCode int                `bson:"zip"`
-	Status  map[string]int     `bson:"status"`
+	Status  Statuses           `bson:"status"`
+}
+
+type Statuses struct {
+	Crowded int `bson:"crowded"`
+	Empty   int `bson:"empty"`
+	Rain    int `bson:"rain"`
+	Wind    int `bson:"wind"`
 }
 
 type CoursesModel struct {
 	Courses *mongo.Collection
 	Logger  *log.Logger
-	Jobs    chan string
+	//Jobs    chan string
 }
 
 func CourseModel(c *mongo.Collection, l *log.Logger) *CoursesModel {
-	model_jobs := make(chan string, 256)
+	//model_jobs := make(chan string, 256)
 	cm := CoursesModel{
 		Courses: c,
 		Logger:  l,
-		Jobs:    model_jobs,
+		//Jobs:    model_jobs,
 	}
-	go func(jobs chan string) {
-		for val := range jobs {
-			l.Printf("Grabbed Value: %s\n", val)
-			time.Sleep(10 * time.Second)
-			key := "status." + val
-			filter := bson.D{{Key: key, Value: bson.D{{Key: "$gt", Value: 0}}}}
-			update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.crowded", Value: -1}}}}
-			resp, _ := c.UpdateMany(context.TODO(), filter, update)
-			l.Printf("Matched Count: %d\n", resp.MatchedCount)
-			if resp.ModifiedCount > 0 {
-				l.Printf("Modified Count: %d\n", resp.ModifiedCount)
-				jobs <- val
-				l.Printf("added val to jobs")
+	/*
+		go func(jobs chan string) {
+			for val := range jobs {
+				l.Printf("Grabbed Value: %s\n", val)
+				time.Sleep(10 * time.Second)
+				key := "status." + val
+				filter := bson.D{{Key: key, Value: bson.D{{Key: "$gt", Value: 0}}}}
+				update := bson.D{{Key: "$inc", Value: bson.D{{Key: "status.crowded", Value: -1}}}}
+				resp, _ := c.UpdateMany(context.TODO(), filter, update)
+				l.Printf("Matched Count: %d\n", resp.MatchedCount)
+				if resp.ModifiedCount > 0 {
+					l.Printf("Modified Count: %d\n", resp.ModifiedCount)
+					jobs <- val
+					l.Printf("added val to jobs")
+				}
 			}
-		}
-	}(model_jobs)
-	model_jobs <- "crowded"
-	model_jobs <- "empty"
-	model_jobs <- "wind"
-	model_jobs <- "rain"
+		}(model_jobs)
+		model_jobs <- "crowded"
+		model_jobs <- "empty"
+		model_jobs <- "wind"
+		model_jobs <- "rain"
+	*/
 	return &cm
 }
 func (m *CoursesModel) IncrementRain(w http.ResponseWriter, req *http.Request) error {
@@ -70,7 +78,7 @@ func (m *CoursesModel) IncrementRain(w http.ResponseWriter, req *http.Request) e
 		return err
 	}
 	m.Logger.Printf("Update Rain: %+v\n", resp)
-	m.Jobs <- "rain"
+	//m.Jobs <- "rain"
 	return nil
 }
 
@@ -85,7 +93,7 @@ func (m *CoursesModel) IncrementEmpty(w http.ResponseWriter, req *http.Request) 
 		return err
 	}
 	m.Logger.Printf("Update Empty: %+v\n", resp)
-	m.Jobs <- "empty"
+	//m.Jobs <- "empty"
 	return nil
 }
 
@@ -100,7 +108,7 @@ func (m *CoursesModel) IncrementWindy(w http.ResponseWriter, req *http.Request) 
 		return err
 	}
 	m.Logger.Printf("Update Wind: %+v\n", resp)
-	m.Jobs <- "wind"
+	//m.Jobs <- "wind"
 	return nil
 }
 
@@ -115,10 +123,11 @@ func (m *CoursesModel) IncrementCrowd(w http.ResponseWriter, req *http.Request) 
 		return err
 	}
 	m.Logger.Printf("Update Crowd: %+v\n", resp)
-	m.Jobs <- "crowded"
+	//m.Jobs <- "crowded"
 	return nil
 }
 
+/*
 func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) error {
 	cid := httprouter.Param(req, "id")
 
@@ -133,8 +142,8 @@ func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) e
 		return err
 	}
 
-	empty := course.Status["empty"]
-	crowded := course.Status["crowded"]
+	empty := course.Status.Empty
+	crowded := course.Status.Crowded
 	result := crowded - empty
 
 	prop := struct {
@@ -151,6 +160,7 @@ func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) e
 	w.Write(resp)
 	return nil
 }
+*/
 
 func (m *CoursesModel) GetCourseStats(w http.ResponseWriter, req *http.Request) error {
 	cid := httprouter.Param(req, "id")
@@ -214,6 +224,7 @@ func (m *CoursesModel) GetCourse(w http.ResponseWriter, req *http.Request) error
 	err := m.Courses.FindOne(context.TODO(), filter).Decode(&course)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		m.Logger.Print("hello")
 		return err
 	}
 

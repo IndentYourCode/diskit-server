@@ -57,7 +57,7 @@ func main() {
 	r.Handle(http.MethodGet, "/region/:city", courses.GetCoursesByRegion)
 	r.Handle(http.MethodGet, "/status/:id", courses.GetCourseStats)
 	r.Handle(http.MethodGet, "/course/:id", courses.GetCourse)
-	r.Handle(http.MethodGet, "/status/population", courses.GetPopulation)
+	//r.Handle(http.MethodGet, "/status/:id/population", courses.GetPopulation)
 	r.Handle(http.MethodPost, "/crowded/:id", courses.IncrementCrowd)
 	r.Handle(http.MethodPost, "/empty/:id", courses.IncrementEmpty)
 	r.Handle(http.MethodPost, "/rain/:id", courses.IncrementRain)
