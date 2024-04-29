@@ -61,7 +61,7 @@ func main() {
 	r.Handle(http.MethodPost, "/crowded/:id", courses.IncrementCrowd)
 	r.Handle(http.MethodPost, "/empty/:id", courses.IncrementEmpty)
 	r.Handle(http.MethodPost, "/rain/:id", courses.IncrementRain)
-	r.Handle(http.MethodPost, "/rain/:wind", courses.IncrementWindy)
+	r.Handle(http.MethodPost, "/wind/:id", courses.IncrementWindy)
 	r.Handle(http.MethodPost, "/courses", courses.PostCourse)
 	go log.Fatal(http.ListenAndServe(":3000", r))
 }
