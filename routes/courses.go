@@ -127,7 +127,6 @@ func (m *CoursesModel) IncrementCrowd(w http.ResponseWriter, req *http.Request) 
 	return nil
 }
 
-/*
 func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) error {
 	cid := httprouter.Param(req, "id")
 
@@ -145,13 +144,12 @@ func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) e
 	empty := course.Status.Empty
 	crowded := course.Status.Crowded
 	result := crowded - empty
+	m.Logger.Print(result)
 
 	prop := struct {
-		Property string
-		Value    int
+		Population int
 	}{
-		Property: "Population",
-		Value:    result,
+		Population: result,
 	}
 
 	resp, _ := json.Marshal(prop)
@@ -160,7 +158,6 @@ func (m *CoursesModel) GetPopulation(w http.ResponseWriter, req *http.Request) e
 	w.Write(resp)
 	return nil
 }
-*/
 
 func (m *CoursesModel) GetCourseStats(w http.ResponseWriter, req *http.Request) error {
 	cid := httprouter.Param(req, "id")
