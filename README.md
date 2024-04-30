@@ -28,9 +28,17 @@ The program was made using Golang 1.18.1
 * How to run the program
 * Step-by-step bullets
 ```
-docker build -t diskit-server .
-docker compose build
-docker compose up -d
+$ docker build -t diskit-server .
+$ docker compose build
+$ docker compose up -d
 ```
 
 The server should now be running and accessible at http://localhost:8080/ you can test this by curling http://localhost:8080/health. You should receive the response "healthy"
+
+It's possible that you need to laod the database with values. I've prepared a CSV and python script for this reason. In the "add-courses" directory is a script called initialize-db.py.
+
+```
+$ python initialize-db.py
+```
+
+Will load the database with courses from the CSV file. Upon a success, you will receive the monogodb objects output as json. If you don't receive this, make sure the mongodb url is correct. 
