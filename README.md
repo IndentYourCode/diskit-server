@@ -15,6 +15,13 @@ Docker version 25.0.3, build 4debf41
 Docker Compose version v2.22.0-desktop.2
 ```
 
+If you wish to run without Docker, you can install the Go Compiler and have an instance of mongodb running on localhost. If both of these are true, then you can run the server by executing:
+
+```
+$ go run main.go
+```
+
+The program was made using Golang 1.18.1
 
 ### Executing program
 
