@@ -33,7 +33,7 @@ $ docker compose build
 $ docker compose up -d
 ```
 
-The server should now be running and accessible at http://localhost:8080/ you can test this by curling http://localhost:8080/health. You should receive the response "healthy"
+The server should now be running and accessible at http://localhost:8080/ you can test this by curling http://localhost:8080/health. You should receive the response "healthy". Note: If you decided to not use Docker, the default port for Go will be 3000 instead of 8080.
 
 It's possible that you need to laod the database with values. I've prepared a CSV and python script for this reason. In the "add-courses" directory is a script called initialize-db.py.
 
